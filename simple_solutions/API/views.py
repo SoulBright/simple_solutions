@@ -9,7 +9,11 @@ load_dotenv()
 
 
 def item_detail(request, id):
-    item = Item.objects.get(pk=id)
+    try:
+        item = Item.objects.get(pk=id)
+    except Item.DoesNotExist:
+        return JsonResponse({'error': 'Item not found'}, status=404)
+
     context = {
         'item': item,
         'stripe_public_key': os.getenv('SRTIPE_PUBLISHABLE_KEY'),
@@ -18,7 +22,11 @@ def item_detail(request, id):
 
 
 def order_detail(request, id):
-    order = Order.objects.get(pk=id)
+    try:
+        order = Order.objects.get(pk=id)
+    except Order.DoesNotExist:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+
     context = {
         'order': order,
         'item_names': list(order.discount.values_list('name', flat=True)),
