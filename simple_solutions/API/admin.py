@@ -7,11 +7,6 @@ class ItemAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    pass
-
-
 @admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
     pass
@@ -19,4 +14,9 @@ class DiscountAdmin(admin.ModelAdmin):
 
 @admin.register(Tax)
 class TaxAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
     pass

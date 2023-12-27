@@ -21,7 +21,13 @@
             {{ tax.name }},
         {% endfor %}
     </p>
-    <p>Total Price: {{ order.total }} &#8381 </p>
+    <p>
+        {% if order.currency == 'rub' %}
+            Total Price: {{ order.total }} &#8381
+        {% else %}
+            Total Price: {{ order.total }} $
+        {% endif %}
+    </p>
     <button id="buy-button">Buy</button>
 
     {% csrf_token %}

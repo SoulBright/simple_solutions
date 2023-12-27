@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
+from decimal import Decimal
 from .models import Order
 
 
@@ -13,5 +14,6 @@ def update_total(sender, instance, action, **kwargs):
         items_price = instance.items.aggregate(total=models.Sum('price'))['total'] or 0
         discount_value = instance.discount.aggregate(total=models.Sum('value'))['total'] or 0
         tax_value = instance.tax.aggregate(total=models.Sum('value'))['total'] or 0
-        instance.total = items_price - (discount_value + tax_value)
+        discount_price = items_price - (items_price * (discount_value / Decimal('100')))
+        instance.total = discount_price + (discount_price * (tax_value / Decimal('100')))
         instance.save()

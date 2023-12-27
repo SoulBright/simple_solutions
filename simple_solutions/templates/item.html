@@ -7,7 +7,13 @@
 <body>
     <h1>{{ item.name }}</h1>
     <p>{{ item.description }}</p>
-    <p>Price: {{ item.price }} &#8381</p>
+        <p>
+        {% if item.currency == 'rub' %}
+            Total Price: {{ item.price }} &#8381
+        {% else %}
+            Total Price: {{ item.price }} $
+        {% endif %}
+    </p>
     <button id="buy-button">Buy</button>
 
     {% csrf_token %}
