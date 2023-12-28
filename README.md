@@ -5,7 +5,7 @@ https://hub.docker.com/repository/docker/soulbright/simple_solutions/general - �
 
 API Test Endpoints :
 
-'62.109.29.6:37342/admin' - доступ к админ панели (log: admin pass: admin
+'62.109.29.6:37342/admin' - доступ к админ панели (log: admin pass: admin)
 
 '62.109.29.6:37342/api/item/<int:id>' - простейшая страница с товаром.
 
