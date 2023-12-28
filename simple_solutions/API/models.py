@@ -72,6 +72,7 @@ class Order(models.Model):
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
 
+    # Вычисление конечной стоимости заказа, с учётом скидок и налогов
     def calculate_total(self):
         total = self.items.aggregate(total=models.Sum('price'))['total'] or Decimal('0')
         discounts_total = self.discount.aggregate(total=models.Sum('value'))['total'] or Decimal('0')
@@ -84,9 +85,6 @@ class Order(models.Model):
             return discount_price
         else:
             return discount_price + (discount_price * (taxes_total / Decimal('100')))
-
-    def get_items_by_currency(self, currency):
-        return self.items.filter(currency=currency)
 
     def save(self, *args, **kwargs):
         super(Order, self).save(*args, **kwargs)

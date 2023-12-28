@@ -6,6 +6,7 @@ from .models import *
 import os
 
 load_dotenv()
+stripe.api_key = os.getenv('SRTIPE_SECRET_KEY')
 
 
 def item_detail(request, id):
@@ -37,20 +38,18 @@ def order_detail(request, id):
     return render(request, 'order.html', context)
 
 
-def buy_item(request, id):
+def get_item_stripe_session_id(request, id):
     try:
         item = Item.objects.get(id=id)
     except Item.DoesNotExist:
         return JsonResponse({'error': 'Item not found'}, status=404)
-
-    stripe.api_key = os.getenv('SRTIPE_SECRET_KEY')
 
     # Создание Stripe сессии
     session = stripe.checkout.Session.create(
         payment_method_types=['card'],
         line_items=[{
             'price_data': {
-                'currency': 'rub',
+                'currency': item.currency,
                 'product_data': {
                     'name': item.name,
                     'description': item.description,
@@ -67,20 +66,17 @@ def buy_item(request, id):
     return JsonResponse({'session_id': session.id})
 
 
-def buy_order(request, id):
+def get_order_stripe_session_id(request, id):
     try:
         order = Order.objects.get(id=id)
     except Order.DoesNotExist:
         return JsonResponse({'error': 'order not found'}, status=404)
 
-    stripe.api_key = os.getenv('SRTIPE_SECRET_KEY')
-
-    # Создание Stripe сессии
     session = stripe.checkout.Session.create(
         payment_method_types=['card'],
         line_items=[{
             'price_data': {
-                'currency': 'rub',
+                'currency': order.currency,
                 'product_data': {
                     'name': ', '.join(order.items.values_list('name', flat=True)),
                 },
@@ -94,3 +90,33 @@ def buy_order(request, id):
     )
 
     return JsonResponse({'session_id': session.id})
+
+
+def get_item_stripe_payment_intent(request, id):
+    try:
+        item = Item.objects.get(id=id)
+    except Item.DoesNotExist:
+        return JsonResponse({'error': 'Item not found'}, status=404)
+
+    # Создание Stripe Payment Intent
+    intent = stripe.PaymentIntent.create(
+        amount=int(item.price * 100),  # Сумма в копейках или центах
+        currency=item.currency,  # Валюта
+        description=item.name  # Описание платежа
+    )
+
+    return JsonResponse({'client_secret': intent.client_secret})
+
+
+def get_order_stripe_payment_intent(request, id):
+    try:
+        order = Order.objects.get(id=id)
+    except Order.DoesNotExist:
+        return JsonResponse({'error': 'Item not found'}, status=404)
+
+    intent = stripe.PaymentIntent.create(
+        amount=int(order.total * 100),
+        currency=order.currency,
+    )
+
+    return JsonResponse({'client_secret': intent.client_secret})
