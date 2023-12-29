@@ -7,42 +7,42 @@ import os
 
 load_dotenv()
 stripe.api_key = os.getenv('SRTIPE_SECRET_KEY')
+stripe_public_key = os.getenv('SRTIPE_PUBLISHABLE_KEY'),
+
+
+def try_get_obj(obj, id):
+    try:
+        obj = obj.objects.get(pk=id)
+        return obj
+    except obj.DoesNotExist:
+        return JsonResponse({'error': 'Item not found'}, status=404)
 
 
 def item_detail(request, id):
-    try:
-        item = Item.objects.get(pk=id)
-    except Item.DoesNotExist:
-        return JsonResponse({'error': 'Item not found'}, status=404)
+    item = try_get_obj(Item, id)
 
     context = {
         'item': item,
-        'stripe_public_key': os.getenv('SRTIPE_PUBLISHABLE_KEY'),
+        'stripe_public_key': stripe_public_key,
     }
     return render(request, 'item.html', context)
 
 
 def order_detail(request, id):
-    try:
-        order = Order.objects.get(pk=id)
-    except Order.DoesNotExist:
-        return JsonResponse({'error': 'Order not found'}, status=404)
+    order = try_get_obj(Order, id)
 
     context = {
         'order': order,
         'item_names': list(order.discount.values_list('name', flat=True)),
         'discount_names': list(order.discount.values_list('name', flat=True)),
         'tax_names': list(order.tax.values_list('name', flat=True)),
-        'stripe_public_key': os.getenv('SRTIPE_PUBLISHABLE_KEY'),
+        'stripe_public_key': stripe_public_key,
     }
     return render(request, 'order.html', context)
 
 
 def get_item_stripe_session_id(request, id):
-    try:
-        item = Item.objects.get(id=id)
-    except Item.DoesNotExist:
-        return JsonResponse({'error': 'Item not found'}, status=404)
+    item = try_get_obj(Item, id)
 
     # Создание Stripe сессии
     session = stripe.checkout.Session.create(
@@ -67,10 +67,7 @@ def get_item_stripe_session_id(request, id):
 
 
 def get_order_stripe_session_id(request, id):
-    try:
-        order = Order.objects.get(id=id)
-    except Order.DoesNotExist:
-        return JsonResponse({'error': 'order not found'}, status=404)
+    order = try_get_obj(Order, id)
 
     session = stripe.checkout.Session.create(
         payment_method_types=['card'],
@@ -93,10 +90,7 @@ def get_order_stripe_session_id(request, id):
 
 
 def get_item_stripe_payment_intent(request, id):
-    try:
-        item = Item.objects.get(id=id)
-    except Item.DoesNotExist:
-        return JsonResponse({'error': 'Item not found'}, status=404)
+    item = try_get_obj(Item, id)
 
     # Создание Stripe Payment Intent
     intent = stripe.PaymentIntent.create(
@@ -109,10 +103,7 @@ def get_item_stripe_payment_intent(request, id):
 
 
 def get_order_stripe_payment_intent(request, id):
-    try:
-        order = Order.objects.get(id=id)
-    except Order.DoesNotExist:
-        return JsonResponse({'error': 'Item not found'}, status=404)
+    order = try_get_obj(Order, id)
 
     intent = stripe.PaymentIntent.create(
         amount=int(order.total * 100),

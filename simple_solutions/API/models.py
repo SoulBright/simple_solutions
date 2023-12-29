@@ -63,6 +63,7 @@ class Order(models.Model):
         choices=CURRENCY_CHOICES,
         blank=True,
         null=True,
+        editable=False
     )
 
     def __str__(self):
